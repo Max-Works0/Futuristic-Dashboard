@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Home</title>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+  <style>
+    :root {
+      --collapsed: 70px;
+      --expanded: 260px;
+      --neon1: #00ffdd;
+      --neon2: #ff00d0;
+      --dark1: #0f2027;
+      --dark2: #203a43;
+      --dark3: #2c5364;
+      --ease: 0.6s ease;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      color: #fff;
+      background: linear-gradient(135deg, var(--dark1), var(--dark3));
+      background-size: 200% 200%;
+      animation: bgShift 25s ease infinite;
+      display: flex;
+    }
+    @keyframes bgShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: var(--collapsed);
+      height: 100vh;
+      background: rgba(10,10,30,0.8);
+      backdrop-filter: blur(6px);
+      transition: width var(--ease);
+      box-shadow: 8px 0 20px rgba(0,0,0,0.5);
+      overflow: hidden;
+    }
+    .sidebar:hover { width: var(--expanded); }
+
+    /* Logo badge */
+    .badge {
+      position: relative;
+      margin: 20px auto;
+      width: var(--collapsed);
+      height: var(--collapsed);
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: width var(--ease);
+    }
+    .badge .short, .badge .full {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      font-weight: bold;
+      letter-spacing: 2px;
+      color: var(--neon1);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .badge .short { font-size: 1.6rem; opacity: 1; }
+    .badge .full {
+      font-size: 1rem;
+      opacity: 0;
+      transform: translate(-60%, -50%);
+    }
+    .sidebar:hover .badge { width: calc(var(--expanded) - 40px); }
+    .sidebar:hover .badge .short {
+      opacity: 0;
+      transform: translate(-60%, -50%);
+    }
+    .sidebar:hover .badge .full {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Nav */
+    nav {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+    }
+    nav a {
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+      color: #ccc;
+      transition: background var(--ease), color var(--ease);
+    }
+    nav a:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+    nav .icon {
+      width: 40px;
+      text-align: center;
+      font-size: 1.3rem;
+      transition: transform var(--ease), color var(--ease);
+    }
+    nav a:hover .icon {
+      color: var(--neon2);
+      transform: scale(1.2) rotate(10deg);
+    }
+    nav .label {
+      margin-left: 12px;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: opacity var(--ease), transform var(--ease);
+    }
+    .sidebar:hover nav .label {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Main */
+    .main {
+      margin-left: var(--collapsed);
+      padding: 30px;
+      width: 100%;
+      transition: margin-left var(--ease);
+    }
+    .sidebar:hover ~ .main {
+      margin-left: var(--expanded);
+    }
+    h1 {
+      font-size: 2.4rem;
+      margin-bottom: 20px;
+      text-shadow: 0 0 8px var(--neon1);
+    }
+
+    /* Cards */
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+      gap: 20px;
+    }
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transform: translateY(20px);
+      opacity: 0;
+      animation: fadeUp 1s forwards;
+    }
+    .card:nth-child(1) { animation-delay: 0.5s; }
+    .card:nth-child(2) { animation-delay: 0.7s; }
+    .card:nth-child(3) { animation-delay: 0.9s; }
+    .card:nth-child(4) { animation-delay: 1.1s; }
+    .card:nth-child(5) { animation-delay: 1.3s; }
+    @keyframes fadeUp {
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .card h2 {
+      margin-bottom: 10px;
+      color: var(--neon2);
+    }
+    .card p {
+      font-size: 1.1rem;
+      color: #ddd;
+    }
+    .card:hover {
+      box-shadow: 0 0 20px rgba(0,255,221,0.5);
+      transform: translateY(-5px);
+      transition: box-shadow 0.4s, transform 0.4s;
+    }
+
+    /* Table */
+    .table-container {
+      margin-top: 30px;
+      overflow-x: auto;
+      opacity: 0;
+      animation: fadeUp 1s 1.5s forwards;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    tbody tr {
+      transition: background 0.4s;
+    }
+    tbody tr:hover {
+      background: rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="badge">
+      <span class="short">⊞</span>
+      <span class="full">MyApp Dashboard</span>
+    </div>
+    <nav>
+      <a href="index.html"><i class="fas fa-home icon"></i><span class="label">Home</span></a>
+      <a href="analytics.html"><i class="fas fa-chart-line icon"></i><span class="label">Analytics</span></a>
+      <a href="reports.html"><i class="fas fa-file-alt icon"></i><span class="label">Reports</span></a>
+      <a href="profile.html"><i class="fas fa-user-circle icon"></i><span class="label">Profile</span></a>
+      <a href="settings.html"><i class="fas fa-cog icon"></i><span class="label">Settings</span></a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <h1>Futuristic Dashboard</h1>
+
+    <div class="card-container">
+      <div class="card">
+        <h2>Active Users</h2>
+        <p>1,243 currently online</p>
+      </div>
+      <div class="card">
+        <h2>CPU Usage</h2>
+        <p>68% average load</p>
+      </div>
+      <div class="card">
+        <h2>Memory</h2>
+        <p>7.2 GB of 16 GB</p>
+      </div>
+      <div class="card">
+        <h2>Disk I/O</h2>
+        <p>120 MB/s read · 85 MB/s write</p>
+      </div>
+      <div class="card">
+        <h2>Network</h2>
+        <p>210 Mbps down · 75 Mbps up</p>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Name</th><th>Status</th><th>Last Seen</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Max P.</td><td>Online</td><td>10:05 AM</td></tr>
+          <tr><td>2</td><td>Alex T.</td><td>Offline</td><td>Yesterday</td></tr>
+          <tr><td>3</td><td>Sophia L.</td><td>Online</td><td>09:47 AM</td></tr>
+          <tr><td>4</td><td>Jordan K.</td><td>Idle</td><td>5 mins ago</td></tr>
+          <tr><td>5</td><td>Casey M.</td><td>Online</td><td>10:12 AM</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+</body>
+</html>
