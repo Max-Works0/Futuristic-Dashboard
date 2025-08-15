@@ -1,9 +1,11 @@
 import SwiftUI
+import CoreLocation
 
 struct WeatherOverviewView: View {
-    @State private var weatherInfo = "Sunny, 28°C"
-    @State private var location = "San Francisco"
+    @State private var weatherInfo = "Fetching..."
+    @State private var location = "Your Location"
     @State private var animationOpacity = 0.0
+    @StateObject private var locationManager = LocationManager()
 
     var body: some View {
         ZStack {
@@ -45,7 +47,7 @@ struct WeatherOverviewView: View {
                     .foregroundColor(.white)
 
                 Spacer()
-                
+
                 // Refresh Button
                 Button(action: {
                     fetchWeather()
@@ -61,17 +63,74 @@ struct WeatherOverviewView: View {
             }
             .padding()
         }
+        .onAppear {
+            fetchWeather()
+        }
     }
 
     func fetchWeather() {
-        // Mock weather update logic
-        weatherInfo = "Cloudy, 22°C"
-        location = "New York"
+        guard let lat = locationManager.latitude, let lon = locationManager.longitude else {
+            weatherInfo = "Unable to get location"
+            return
+        }
+
+        // Replace YOUR_API_KEY with your actual OpenWeatherMap API key
+        let apiKey = "YOUR_API_KEY"
+        let urlString = "https://api.openweathermap.org/data/2.5/weather?lat=\(lat)&lon=\(lon)&units=metric&appid=\(apiKey)"
+
+        guard let url = URL(string: urlString) else { return }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let data = data {
+                do {
+                    let weatherResponse = try JSONDecoder().decode(WeatherResponse.self, from: data)
+                    DispatchQueue.main.async {
+                        weatherInfo = "\(weatherResponse.weather[0].description.capitalized), \(Int(weatherResponse.main.temp))°C"
+                        location = weatherResponse.name
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        weatherInfo = "Failed to fetch weather"
+                    }
+                }
+            }
+        }.resume()
     }
 }
 
-struct WeatherOverviewView_Previews: PreviewProvider {
-    static var previews: some View {
-        WeatherOverviewView()
+struct WeatherResponse: Codable {
+    struct Weather: Codable {
+        let description: String
+    }
+    struct Main: Codable {
+        let temp: Double
+    }
+    let weather: [Weather]
+    let main: Main
+    let name: String
+}
+
+// Location Manager for fetching the user's location
+class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    private let locationManager = CLLocationManager()
+
+    @Published var latitude: Double?
+    @Published var longitude: Double?
+
+    override init() {
+        super.init()
+        locationManager.delegate = self
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.startUpdatingLocation()
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.first else { return }
+        self.latitude = location.coordinate.latitude
+        self.longitude = location.coordinate.longitude
+    }
+
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Failed to find user's location: \(error.localizedDescription)")
     }
 }
